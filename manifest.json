@@ -2,8 +2,8 @@
     "name" : "作业任务系统",
     "appid" : "__UNI__6F90532",
     "description" : "作业任务系统",
-    "versionName" : "0.1.0",
-    "versionCode" : 10,
+    "versionName" : "0.2.0",
+    "versionCode" : 20,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
