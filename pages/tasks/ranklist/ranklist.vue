@@ -1,174 +1,106 @@
 <template>
 	<view>
-		<uni-card :title="title" mode="title" :is-shadow="true" :thumbnail="pic" :extra="'任务ID:'+tid" :note="type">
-			<div class="progress progress--active" v-if="type!=='通知'">
-				<b :class="bar_style" :style="'width:'+progress+'%;'">
-					<span class="progress__text">
-						总体进度：<em>{{progress}}%</em>
-					</span>
-				</b>
-			</div>
+		<uni-card class="index_card" title="总览" mode="basic" icon="circle-filled" 
+		:is-shadow="true" extra="您的排名" note="排行榜的数据仅对v0.2.0更新后登录的用户有效">
+			<center> <h2>您当前的排名：{{rank}}</h2></center>
 		</uni-card>
-		<uni-card title="任务详情">
-			<rich-text :nodes="detail"></rich-text>
-		</uni-card>
-		<uni-card title="附件" v-if="files['length'] !== 0">
-			<uni-list>
-				<uni-list-item v-for="index in files['length']" rightText='下载' :title="files[(index-1).toString()]['name']"
-				 clickable @click="open_url(files[(index-1).toString()]['url'])"></uni-list-item>
-			</uni-list>
-		</uni-card>
-		<uni-card title="控制面板" v-if="type!=='通知'">
-			<text>
-				<center class="info">当前完成了<b>{{now}}</b>,总共<b>{{total}}</b>.</center>
-			</text>
-
-			<view class="panel">
-				<view class="small"><button type="primary" @click="change(-1)" :disabled="loading" :loading="loading">-1</button></view>
-				<view class="small"><button type="primary" @click="change(1)" :disabled="loading" :loading="loading">+1</button></view>
+		<uni-list-item :class="(item.you ? 'you' : '' )" v-for="item in ranklist">
+			<view slot="header" :class="'rank_number r_'+(ranklist.indexOf(item)+1).toString()">
+				{{ranklist.indexOf(item)+1}}
 			</view>
-			<button class="big" type="warn" @click="change(9999999)" :disabled="loading" :loading="loading">全部点满！</button>
-			<button class="big" type="warn" @click="change(-9999999)" :disabled="loading" :loading="loading">全部清零？</button>
-		</uni-card>
+			<view slot="body" class="single-list">
+				{{item.email}}
+				<view class="progress progress--active">
+					<b :class="item.bar_style" :style="'width:'+item.progress+'%;'">
+						<span class="progress__text">
+							总体进度：<em>{{item.progress}}%</em>
+						</span>
+					</b>
+				</view>
+			</view>
+		</uni-list-item>
 	</view>
 </template>
 
 <script>
+	import md5 from '../../../static/js/md5.js'
 	export default {
 		data() {
 			return {
-				tid: "加载中",
-				title: "加载中",
-				type: "加载中",
-				bar_style: "progress__bar",
-				progress: 0,
-				detail: "加载中",
-				files: [],
-				pic: "",
-				total: 0,
-				now: 0,
-				loading: false,
+				ranklist: [],
+				rank: "加载中"
 			}
 		},
-		onShow() {
-			this.tid = uni.getStorageSync('now_tid');
-			this.get_info()
+		onLoad() {
+			this.get_rank_list()
 		},
 		methods: {
-			async change(value) {
-				this.loading = true;
-				this.now += value;
-				if (this.now > this.total) this.now = this.total
-				if (this.now < 0) this.now = 0
-				let {
-					data: result
-				} = this.$ajax({
-					url: "hwk/set_save",
-					data: {
-						uni_tid: this.tid,
-						value: this.now,
-						token: uni.getStorageSync('token')
-					},
-					noloading: true,
-				})
-				this.loading = false;
-				this.progress = Math.round((this.now / this.total) * 100)
-				this.bar_style = "progress__bar "
-				if (this.progress >= 30) this.bar_style += "progress__bar--orange "
-				if (this.progress >= 55) this.bar_style += "progress__bar--yellow "
-				if (this.progress >= 85) this.bar_style += "progress__bar--green "
-			},
-			open_url(url) {
-				if (url === "") return
-				uni.showModal({
-					title: "提示",
-					content: "即将跳转页面至\n" + url,
-					success: function(res) {
-						if (res.confirm) {
-							// #ifdef H5 || MP-WEIXIN || MP-QQ
-							console.log("H5");
-							window.open(url);
-							// #endif
-							// #ifdef APP-PLUS
-							console.log("APP");
-							plus.runtime.openURL(url);
-							// #endif
-						}
+			async get_rank_list() {
+				const db = uniCloud.database();
+				let data = await db.collection("hwk_ranklist").orderBy("progress", "desc").get()
+				let list = data.result.data
+				this.rank = list.map(item => {
+					return item.email
+				}).indexOf(uni.getStorageSync("usr_email")) + 1
+				list = list.map(item => {
+					let bar_style = "progress__bar "
+					if (item.progress >= 30) bar_style += "progress__bar--orange "
+					if (item.progress >= 55) bar_style += "progress__bar--yellow "
+					if (item.progress >= 85) bar_style += "progress__bar--green "
+					return {
+						email: item.email[0] + item.email[1] + item.email[2] + "**@***.**",
+						progress: item.progress,
+						bar_style: bar_style,
+						you: item.email===uni.getStorageSync("usr_email") ? true : false,
+						avatar: "https://cdn.v2ex.com/gravatar/" + md5(item.email)
 					}
 				})
-			},
-			async get_info() {
-				let {
-					data: task_info
-				} = await this.$ajax({
-					url: 'hwk/task_info',
-					data: {
-						uni_tid: this.tid,
-					}
-				})
-				if (task_info.code !== 200) {
-					uni.showModal({
-						title: "错误",
-						content: "加载任务失败",
-						showCancel: false,
-					})
-				}
-				this.type = task_info.type === "task" ? "普通任务" : "通知";
-				this.title = task_info.title;
-				this.detail = task_info.details;
-				this.files = task_info.files;
-				let {
-					data: save_info
-				} = await this.$ajax({
-					url: 'hwk/get_save',
-					data: {
-						token: uni.getStorageSync('token'),
-					}
-				})
-				this.now = Number(JSON.parse(save_info['save'])[this.tid] ? JSON.parse(save_info['save'])[this.tid] : 0)
-				this.total = task_info.total
-				this.pic = task_info.type === "task" ? this.now === this.total ? "../../../static/images/finished.png" :
-					"../../../static/images/unfinished.png" : "../../../static/images/notice.png";
-				this.progress = Math.round((this.now / this.total) * 100)
-				this.bar_style = "progress__bar "
-				if (this.progress >= 30) this.bar_style += "progress__bar--orange "
-				if (this.progress >= 55) this.bar_style += "progress__bar--yellow "
-				if (this.progress >= 85) this.bar_style += "progress__bar--green "
-				uni.stopPullDownRefresh()
-			},
-			async onPullDownRefresh() {
-				await this.get_info()
+				this.ranklist = list
 			}
+		},
+		async onPullDownRefresh() {
+			await this.get_rank_list()
+			uni.stopPullDownRefresh()
 		}
 	}
 </script>
 
 <style>
-	.panel {
-		display: flex;
-		justify-content: center;
-		flex-wrap: wrap;
+	.you{
+		background-color: #e8e8e8;
 	}
-
-	.info {
-		font-size: 36rpx;
+	
+	.rank_number{
+		text-align: center;
+		font-size: 40rpx;
+		width: 10%;
+		margin-right: 40rpx;
+		color: #6D6D72;
 	}
-
-	.small {
-		width: 40%;
-		margin: 15rpx;
-		margin-left: 5%;
-		margin-right: 5%;
+	
+	.r_1{
+		font-size: 80rpx;
+		font-weight: bold;
+		color: #E33500;
 	}
-
-
-	.big {
-		margin: 15rpx;
-		margin-left: 5%;
-		margin-right: 5%;
-
+	
+	.r_2{
+		font-size: 70rpx;
+		font-weight: bold;
+		color: #FC3B00;
 	}
-
+	
+	.r_3{
+		font-size: 60rpx;
+		font-weight: bold;
+		color: #F0AD4E;
+	}
+	
+	
+	.single-list{
+		width: 100%;
+	}
+	
 	.progress {
 		font-size: 1.2em;
 		height: 20px;

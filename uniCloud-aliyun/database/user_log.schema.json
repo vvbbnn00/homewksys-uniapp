@@ -1,0 +1,24 @@
+{
+	"bsonType": "object",
+	"required": [],
+	"permission": {
+		"read": true,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "ID，系统自动生成"
+		},
+		"email": {
+			"description": "用户的邮箱"
+		},
+		"date": {
+			"description": "log创建的时间"
+		},
+		"content": {
+			"description": "log的内容"
+		}
+	}
+}

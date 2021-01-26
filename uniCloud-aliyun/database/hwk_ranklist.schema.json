@@ -1,0 +1,24 @@
+{
+	"bsonType": "object",
+	"required": [],
+	"permission": {
+		"read": true,
+		"create": false,
+		"update": true,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "ID，系统自动生成"
+		},
+		"email": {
+			"description": "用户邮箱"
+		},
+		"progress": {
+			"description": "当前进度"
+		},
+		"visible": {
+			"description": "是否可见"
+		}
+	}
+}

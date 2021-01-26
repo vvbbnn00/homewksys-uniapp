@@ -82,6 +82,24 @@
 		    }
 		    
 		}
+        ,{
+            "path" : "pages/tasks/ranklist/ranklist",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "排行榜",
+                "enablePullDownRefresh": true
+            }
+            
+        }
+        ,{
+            "path" : "pages/tasks/courses/courses",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "网课下载",
+                "enablePullDownRefresh": true
+            }
+            
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

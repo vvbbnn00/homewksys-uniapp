@@ -2,7 +2,7 @@
 	<view>
 		<!-- 		<uni-search-bar :radius="100" placeholder="快速搜索您的任务" @confirm="search"></uni-search-bar>
  -->
-		<uni-notice-bar :text="'Tips: '+gettips()" showClose="true"></uni-notice-bar>
+		<uni-notice-bar :text="tips" showClose="true"></uni-notice-bar>
 		<uni-card class="index_card" title="任务总览" mode="basic" icon="circle-filled" :is-shadow="true" extra="您的总体完成情况">
 			<div class="progress progress--active">
 				<b :class="bar_style" :style="'width:'+total_progress+'%;'">
@@ -19,6 +19,8 @@
 				</b>
 			</div>
 		</uni-card>
+		<uni-list-item title="排行榜" to="ranklist/ranklist" link></uni-list-item>
+		<uni-list-item title="网课录播" note="物理班的网课" to="courses/courses" link></uni-list-item>
 		<div id="task-list">
 			<uni-list v-for="subject in subjects">
 				<uni-section :title="subject.name" type="line"> </uni-section>
@@ -37,25 +39,24 @@
 			return {
 				subjects: [],
 				total_progress: 0,
-				bar_style: "progress__bar"
+				bar_style: "progress__bar",
+				tips: "加载中..."
 			}
 		},
 		onShow() {
+			this.gettips()
 			if (uni.getStorageSync('ini_update')) this.initialize()
 		},
 		onLoad() {
 			this.initialize()
 		},
 		methods: {
-			gettips() {
-				const tiplist = ["下拉以刷新", "一键全部点满按钮会让进度条一瞬间爆满",
-					"进度条会在不同进度时改变颜色",
-					"作者是一只鸽子", "其实，制作APP全程都没用到AndroidSudio", "其实tips能显示两行的",
-					"原本这个软件是有搜索功能的，但作者懒，删了", "劳逸结合很重要（才不是看番的借口",
-					"人类在神圣的沉默中学会历史", "El Psy Congroo.", "其实挑选进度条的样式花了作者很长时间",
-					"这不是一个看tips的软件"
-				]
-				return tiplist[Math.floor(Math.random() * (tiplist.length))];
+			async gettips() {
+				const db = uniCloud.database();
+				let tipnumber = await db.collection("hwk_tips").count()
+				tipnumber = Math.floor(Math.random() * (tipnumber.result.total))
+				let tips = await db.collection('hwk_tips').skip(tipnumber).get()
+				this.tips = "Tips: " + tips.result.data[0].content.toString();
 			},
 			initialize() {
 				if (uni.getStorageSync('token') == "") {
@@ -86,7 +87,8 @@
 				let {
 					data: result
 				} = await this.$ajax({
-					url: "hwk/get_list?token=" + this.token
+					url: "hwk/get_list?token=" + this.token,
+					noloading: true
 				})
 				if (result.code === 400) {
 					uni.showModal({
@@ -100,7 +102,8 @@
 				let {
 					data: result2
 				} = await this.$ajax({
-					url: "hwk/get_save?token=" + this.token
+					url: "hwk/get_save?token=" + this.token,
+					noloading: true
 				})
 				this.user_data = JSON.parse(result2['save']);
 				this.subjects = [];
@@ -160,6 +163,13 @@
 					total_now += now;
 				}
 				this.total_progress = Math.round((total_now / total_total) * 100)
+				const db = uniCloud.database();
+				db.collection("hwk_ranklist").where({
+					"email": uni.getStorageSync("usr_email")
+				}).update({
+					email: uni.getStorageSync("usr_email"),
+					progress: this.total_progress
+				})
 				uni.setStorageSync('total_progress', this.total_progress)
 				this.bar_style = "progress__bar "
 				if (this.total_progress >= 30) this.bar_style += "progress__bar--orange "
@@ -175,14 +185,14 @@
 				// console.log(this.subjects[0])
 			}
 		},
-		onPullDownRefresh() {
-			this.load_tasks()
+		async onPullDownRefresh() {	
+			await this.gettips()
+			await this.load_tasks()
 		}
 	}
 </script>
 
 <style>
-
 	.progress {
 		font-size: 1.2em;
 		height: 20px;

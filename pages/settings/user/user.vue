@@ -32,6 +32,17 @@
 			this.get_login_data()
 		},
 		methods: {
+			getYMDHMS(timestamp) {
+				let time = new Date(timestamp)
+				let year = time.getFullYear()
+				const month = (time.getMonth() + 1).toString().padStart(2, '0')
+				const date = (time.getDate()).toString().padStart(2, '0')
+				const hours = (time.getHours()).toString().padStart(2, '0')
+				const minute = (time.getMinutes()).toString().padStart(2, '0')
+				const second = (time.getSeconds()).toString().padStart(2, '0')
+
+				return year + '-' + month + '-' + date + ' ' + hours + ':' + minute + ':' + second
+			},
 			logout() {
 				uni.showModal({
 					title: '提示',
@@ -66,8 +77,11 @@
 				try {
 					const token = uni.getStorageSync('token');
 					if (token) {
-						let {data:data} = await this.$ajax({
-							url:"hwk/user_info?token=" + token
+						let {
+							data: data
+						} = await this.$ajax({
+							url: "hwk/user_info?token=" + token,
+							noloading: true
 						})
 						if (data['code'] !== 200) {
 							uni.showToast({
@@ -78,16 +92,21 @@
 							});
 							return
 						}
+
 						this.uid = "UID:" + data['uid'];
 						this.username = data['name'];
 						this.email = data['email'];
-						let log_list = data['log'];
-						log_list = JSON.parse(data['log']);
+
+						const db = uniCloud.database();
+						let logdata = await db.collection("user_log").orderBy("timestamp", "desc").limit(50).where({
+							email: this.email,
+						}).get()
 						this.list = [];
-						for (let item in log_list) {
+						for (let item in logdata.result.data) {
+							data = logdata.result.data[item]
 							this.list.push({
-								date: item,
-								info: log_list[item]
+								date: this.getYMDHMS(data.timestamp),
+								info: data.content
 							});
 						}
 						if (this.list.length <= 0) {
@@ -95,7 +114,11 @@
 								'info': '暂无日志'
 							}];
 						}
-						this.list.reverse()
+						else{
+							this.list.push({
+								info: "仅显示最新50条日志"
+							});
+						}
 						this.avatar = "https://cdn.v2ex.com/gravatar/" + md5(data['email']);
 					} else {
 						uni.showToast({

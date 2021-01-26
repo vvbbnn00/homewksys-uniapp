@@ -1,0 +1,27 @@
+{
+	"bsonType": "object",
+	"required": [],
+	"permission": {
+		"read": true,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "ID，系统自动生成"
+		},
+		"subject": {
+			"description": "科目"
+		},
+		"title": {
+			"description": "课程标题"
+		},
+		"date": {
+			"description": "上传日期"
+		},
+		"url": {
+			"description": "下载连接"
+		}
+	}
+}

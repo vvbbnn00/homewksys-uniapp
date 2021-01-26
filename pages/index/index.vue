@@ -1,25 +1,30 @@
 <template>
 	<view class="content">
+		<uni-notice-bar v-if="under_dev" text="当前处于测试环境"></uni-notice-bar>
 		<!-- #ifdef APP-PLUS -->
 		<uni-notice-bar @getmore="get_latest_version()" :showGetMore="true" moreText="立刻更新" v-if="notice!==''" scrollable="true"
 		 showClose="true" showIcon="true" :text="notice"></uni-notice-bar>
 		<!-- #endif -->
 		<uni-card class="index_card" title="总览" mode="basic" icon="circle-filled" :is-shadow="true" extra="您的总体完成情况" note="El Psy Congroo.">
-			<div>-您当前需要完成的任务</div>
-			<center class="task_title"> {{task_name}} </center>
-			<div :style="'color:' + task_color + ';'">-您的总体进度：{{task_progress}}</div>
-			<div>-距离开学还有：</div>
-			<uni-countdown :second="remains"></uni-countdown>
+			<center class="task_title"> <b>{{task_name}}</b></center>
+			<view>- 您的总体进度：<text :style="'color:' + task_color + ';'"><b>{{task_progress}}</b></text>
+				<uni-icons type="refresh-filled" size="20" @click="load_tasks()"></uni-icons>
+			</view>
+			<div>- 距离开学还有：</div>
+			<center>
+				<uni-countdown :second="remains" class="countdown"></uni-countdown>
+			</center>
 		</uni-card>
 
-		<uni-card class="index_card" title="本周任务清单" icon="chatbubble" mode="basic" :is-shadow="true">
+		<uni-card v-if="show_everyweek" class="index_card" title="任务清单(点击左侧Tag查看详情)" icon="chatbubble" mode="basic"
+		 :is-shadow="true">
 			<view class="todo-list">
 				<table class="pure-table">
 					<tr v-for="item in thisweek">
 						<td>
 							<view class="task-name" style="width: 120rpx;">
-								<uni-tag :text="item.accomplished === 'true' ? '达成' : '未达成'" :type="item.accomplished === 'true' ? 'success' : 'error'"
-								 :circle="true"></uni-tag>
+								<uni-tag :text="item.accomplished === 'true' ? '达成' : calc_day(item.deadline).tag" :type="item.accomplished === 'true' ? 'success' : calc_day(item.deadline).color"
+								 :circle="true" @click="get_detail(item.title, item.deadline, item.detail, item.accomplished)"></uni-tag>
 							</view>
 						</td>
 						<td>
@@ -40,14 +45,16 @@
 
 		</uni-card>
 
-		<uni-card v-for="index in notice_data['length']" class="index_card" :title="notice_data[(index-1).toString()]['title']"
+		<uni-card v-if="show_notice" v-for="index in notice_data['length']" class="index_card" :title="notice_data[(index-1).toString()]['title']"
 		 icon="chatbubble" mode="basic" :is-shadow="true" :note="notice_data[(index-1).toString()]['date']" @click="open_url(notice_data[(index-1).toString()]['url'])">
 			<rich-text :nodes="notice_data[(index-1).toString()]['msg']"></rich-text>
 		</uni-card>
 
-		<uni-card class="index_card" title="一言" icon="paperplane" mode="basic" :is-shadow="true" :note="one_from">
+		<uni-card v-if="show_one" class="index_card" title="一言" icon="paperplane" mode="basic" :is-shadow="true" :note="one_from">
 			{{one_sentence}}
-			<view class="refresh"><uni-tag class="refresh-button" text="刷新" type="default" :circle="true" @click="get_one()"></uni-tag></view>
+			<view class="refresh">
+				<uni-tag class="refresh-button" text="刷新" type="default" :circle="true" @click="get_one()"></uni-tag>
+			</view>
 		</uni-card>
 	</view>
 </template>
@@ -66,27 +73,192 @@
 				remains: 0,
 				notice_data: [],
 				thisweek: [],
-				notice: ""
+				notice: "",
+				show_everyweek: true,
+				show_notice: true,
+				show_one: true,
+				under_dev: false,
 			}
 		},
 		onShow() {
+			uni.preloadPage({
+				url: "../tasks/tasks"
+			})
 			this.task_progress = uni.getStorageSync('total_progress') + "%"
+			this.task_color = "#fb3848"
+			if (uni.getStorageSync('total_progress') >= 30) this.task_color = "#ff6030"
+			if (uni.getStorageSync('total_progress') >= 55) this.task_color = "#ffc74f"
+			if (uni.getStorageSync('total_progress') >= 85) this.task_color = "#19ff37"
+
+			if (uni.getStorageSync('ini_everyweek') === "") uni.setStorageSync('ini_everyweek', true)
+			if (uni.getStorageSync('ini_open_one') === "") uni.setStorageSync('ini_open_one', true)
+			if (uni.getStorageSync('ini_notice') === "") uni.setStorageSync('ini_notice', true)
+			if (uni.getStorageSync('is_dev_mode') === "") uni.setStorageSync('is_dev_mode', false)
+
+			this.under_dev = uni.getStorageSync('is_dev_mode')
+			this.show_one = uni.getStorageSync('ini_open_one')
+			this.show_everyweek = uni.getStorageSync('ini_everyweek')
+			this.show_notice = uni.getStorageSync('ini_notice')
+
 			if (uni.getStorageSync('ini_update')) this.init();
 			// console.log(uni.getStorageSync('ini_update'))
 		},
 		onLoad() {
-			this.init();
 			this.get_one();
+			this.init();
 			// #ifdef APP-PLUS
 			this.get_latest_version();
 			// #endif
+			if ((uni.getStorageSync("token") !== "") && (uni.getStorageSync("Update-v0.2") !== "OK")) {
+				uni.showModal({
+					title: "提示",
+					content: "由于该更新是大版本更新，可能会遇到数据显示错误的现象，按确定以同步。",
+					showCancel: false,
+					success: (res) => {
+						if (res.confirm) {
+							uni.switchTab({
+								url: "../settings/settings"
+							})
+							uni.setStorageSync("Update-v0.2", "OK")
+						}
+					}
+				})
+			}
 		},
 		methods: {
+			async load_tasks() {
+				this.task_progress = "加载中"
+				this.token = uni.getStorageSync('token')
+				let {
+					data: result
+				} = await this.$ajax({
+					url: "hwk/get_list?token=" + this.token,
+					noloading: true
+				})
+				if (result.code === 400) {
+					uni.showModal({
+						title: "提示",
+						content: "您尚未设置选科，请在[设置-任务设置-切换您的选科]中设置。",
+						showCancel: false
+					})
+					return
+				}
+				this.json_data = result;
+				let {
+					data: result2
+				} = await this.$ajax({
+					url: "hwk/get_save?token=" + this.token,
+					noloading: true
+				})
+				this.user_data = JSON.parse(result2['save']);
+				this.subjects = [];
+				let total_total = 0;
+				let total_now = 0;
+				for (let i = 0; i < this.json_data['subjects']['length']; i++) {
+					let data = this.json_data['subjects'][i.toString()]['tasks']
+					let total = 0;
+					let now = 0;
+					for (let j = 0; j < data['length']; j++) {
+						let progress = this.user_data[data[j.toString()]['uni_tid']]
+						if (progress === undefined) {
+							progress = '0';
+						}
+						if (data[j.toString()]['type'] !== "notification") {
+							now += Number(progress)
+							total += Number(data[j.toString()]['total'])
+						}
+					}
+					total_total += total;
+					total_now += now;
+				}
+				uni.setStorageSync('total_progress', Math.round((total_now / total_total) * 100))
+				this.task_progress = Math.round((total_now / total_total) * 100).toString() + "%"
+				const db = uniCloud.database();
+				db.collection("hwk_ranklist").where({
+					"email": uni.getStorageSync("usr_email")
+				}).update({
+					email: uni.getStorageSync("usr_email"),
+					progress: this.task_progress
+				})
+			},
+			formatDate(date) {
+				var date = new Date(date * 1000);
+				var YY = date.getFullYear() + '-';
+				var MM = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+				var DD = (date.getDate() < 10 ? '0' + (date.getDate()) : date.getDate());
+				var hh = (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+				var mm = (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+				var ss = (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+				return YY + MM + DD + " " + hh + mm + ss;
+			},
+			get_detail(title, deadline, detail, completed) {
+				uni.showModal({
+					title: "任务详情",
+					content: "任务标题：" + title + "\n任务详情：" + (detail === "" ? "详见任务详情页面" : detail) + "\n交付日期：" + this.formatDate(
+						deadline) + "\n当前状态：" + (completed === "true" ? "达标" : "未达标"),
+					showCancel: false,
+				})
+			},
+			calc_day(timestamp_target) {
+				let now = Math.floor(new Date().getTime() / 1000)
+				let remains = timestamp_target - now
+				if (remains < 0) {
+					return {
+						tag: "超时",
+						color: "error"
+					}
+				}
+				let [day, hour, minute, second] = [0, 0, 0, 0]
+				if (remains > 0) {
+					day = Math.floor(remains / (60 * 60 * 24))
+					hour = Math.floor(remains / (60 * 60)) - (day * 24)
+					minute = Math.floor(remains / 60) - (day * 24 * 60) - (hour * 60)
+					second = Math.floor(remains) - (day * 24 * 60 * 60) - (hour * 60 * 60) - (minute * 60)
+				}
+				if (day > 0) {
+					if (day >= 15) {
+						return {
+							tag: day.toString() + "天",
+							color: "primary"
+						}
+					}
+					if (day >= 7) {
+						return {
+							tag: day.toString() + "天",
+							color: "warning"
+						}
+					} else {
+						return {
+							tag: day.toString() + "天",
+							color: "error"
+						}
+					}
+				}
+				if (hour > 0) {
+					return {
+						tag: hour.toString() + "时",
+						color: "error"
+					}
+				}
+				if (minute > 0) {
+					return {
+						tag: minute.toString() + "分",
+						color: "error"
+					}
+				}
+				if (second > 0) {
+					return {
+						tag: second.toString() + "秒",
+						color: "error"
+					}
+				}
+			},
 			async get_latest_version() {
 				let {
 					data: result
 				} = await this.$ajax({
-					url: "hwk/version.json"
+					url: "hwk/version.json",
+					noloading: true
 				})
 				let content = "新版本：" + result.version + "\n新版特性:\n"
 				for (let item in result.log) {
@@ -119,10 +291,24 @@
 					url: "hwk/today",
 					data: {
 						token: uni.getStorageSync('token')
-					}
+					},
+					noloading: true
 				})
 				// console.log(week_data['list'])
-				this.thisweek = week_data['list']
+				let todo = week_data['list'].filter(item => {
+					if (item.accomplished === "true") return false
+					return true;
+				});
+				let done = week_data['list'].filter(item => {
+					if (item.accomplished === "true") return true
+					return false;
+				});
+				let now = Math.floor(new Date().getTime() / 1000)
+				todo.sort((i1, i2) => {
+					if (i1.deadline - now > i2.deadline - now) return 1
+					return -1
+				})
+				this.thisweek = todo.concat(done)
 			},
 			init() {
 				this.this_week()
@@ -173,7 +359,8 @@
 				let {
 					data: task_data
 				} = await this.$ajax({
-					url: "hwk/task_info.json"
+					url: "hwk/task_info.json",
+					noloading: true
 				})
 				this.task_name = task_data.task_name;
 				let deadline = Number(task_data.deadline)
@@ -181,11 +368,12 @@
 				let {
 					data: notice_data
 				} = await this.$ajax({
-					url: "hwk/notice"
+					url: "hwk/notice",
+					noloading: true
 				})
 				let lid = uni.getStorageSync("user_lid")
 				this.notice_data = notice_data['notice'].filter(item => {
-					if (item.target.indexOf("All")+item.target.indexOf(lid)!==-2) {
+					if (item.target.indexOf("All") + item.target.indexOf(lid) !== -2) {
 						return true;
 					}
 					return false;
@@ -199,14 +387,15 @@
 					data: result
 				} = await this.$ajax({
 					url: "https://v1.hitokoto.cn/?c=" + uni.getStorageSync("ini_open_sel").join('&c='),
-					local: false
+					local: false,
+					noloading: true
 				})
 				this.one_from = result.from.toString();
 				this.one_sentence = result.hitokoto.toString();
 			}
 		},
-		onPullDownRefresh() {
-			this.get_info();
+		async onPullDownRefresh() {
+			await this.get_info();
 		}
 	}
 </script>
@@ -215,7 +404,8 @@
 	.refresh {
 		display: inline-block;
 	}
-	.refresh-button{
+
+	.refresh-button {
 		border: 1rpx solid #555555;
 	}
 
@@ -250,7 +440,7 @@
 	}
 
 	.task_title {
-		margin-top: 20rpx;
+		margin-top: 5rpx;
 		margin-bottom: 20rpx;
 		font-size: 36rpx;
 		color: #1e272e;
@@ -277,5 +467,11 @@
 
 	.index_card {
 		width: 90%;
+	}
+
+	.countdown {
+		width: 50%;
+		font-size: 30rpx;
+		font-weight: bold;
 	}
 </style>
