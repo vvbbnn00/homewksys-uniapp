@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view class="content">
 		<!-- 		<uni-search-bar :radius="100" placeholder="快速搜索您的任务" @confirm="search"></uni-search-bar>
  -->
 		<uni-notice-bar :text="tips" showClose="true"></uni-notice-bar>
@@ -193,6 +193,12 @@
 </script>
 
 <style>
+	.content {
+		max-width: 550px;
+		margin: auto;
+		box-shadow: 0px 0px 10px #888888;
+	}
+	
 	.progress {
 		font-size: 1.2em;
 		height: 20px;

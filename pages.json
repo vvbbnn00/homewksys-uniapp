@@ -50,53 +50,66 @@
 			}
 		},
 		{
-			"path": "pages/settings/setting_notice/setting_notice",
+			"path": "pages/settings/change_pass/change_pass",
 			"style": {
-				"navigationBarTitleText": "通知设置",
+				"navigationBarTitleText": "修改密码",
 				"enablePullDownRefresh": false
 			}
+
+		}, {
+			"path": "pages/tasks/detail/detail",
+			"style": {
+				"navigationBarTitleText": "任务详情",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/settings/feedback/feedback",
+			"style": {
+				"navigationBarTitleText": "问题反馈",
+				"enablePullDownRefresh": false
+			}
+
+		},
+		{
+			"path": "pages/tasks/ranklist/ranklist",
+			"style": {
+				"navigationBarTitleText": "排行榜",
+				"enablePullDownRefresh": true
+			}
+
+		},
+		{
+			"path": "pages/tasks/courses/courses",
+			"style": {
+				"navigationBarTitleText": "网课下载",
+				"enablePullDownRefresh": true
+			}
 		}
-        ,{
-            "path" : "pages/settings/change_pass/change_pass",
+	    ,{
+            "path" : "pages/about/LICENSE/LICENSE",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "修改密码",
+                "navigationBarTitleText": "LICENSE",
+                "enablePullDownRefresh": false
+            }
+        
+        }
+        ,{
+            "path" : "pages/test/test",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
                 "enablePullDownRefresh": false
             }
             
         }
         ,{
-            "path" : "pages/tasks/detail/detail",
+            "path" : "pages/tasks/courses/play/play",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "任务详情",
-                "enablePullDownRefresh": true
-            }
-        },
-		{
-		    "path" : "pages/settings/feedback/feedback",
-		    "style" :                                                                                    
-		    {
-		        "navigationBarTitleText": "问题反馈",
-		        "enablePullDownRefresh": false
-		    }
-		    
-		}
-        ,{
-            "path" : "pages/tasks/ranklist/ranklist",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "排行榜",
-                "enablePullDownRefresh": true
-            }
-            
-        }
-        ,{
-            "path" : "pages/tasks/courses/courses",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "网课下载",
-                "enablePullDownRefresh": true
+                "navigationBarTitleText": "视频播放",
+                "enablePullDownRefresh": false
             }
             
         }
@@ -107,25 +120,34 @@
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
 	},
-	"tabBar":{
-		"list":[
-			{
+	"tabBar": {
+		"list": [{
 				"text": "首页",
-				"pagePath":"pages/index/index",
-				"iconPath":"static/images/home.png",
-				"selectedIconPath":"static/images/home-sel.png"
+				"pagePath": "pages/index/index",
+				"iconPath": "static/images/home.png",
+				"selectedIconPath": "static/images/home-sel.png"
 			},
 			{
 				"text": "任务",
-				"pagePath":"pages/tasks/tasks",
-				"iconPath":"static/images/task.png",
-				"selectedIconPath":"static/images/task-sel.png"
+				"pagePath": "pages/tasks/tasks",
+				"iconPath": "static/images/task.png",
+				"selectedIconPath": "static/images/task-sel.png"
 			},
 			{
 				"text": "设置",
-				"pagePath":"pages/settings/settings",
-				"iconPath":"static/images/settings.png",
-				"selectedIconPath":"static/images/settings-sel.png"
+				"pagePath": "pages/settings/settings",
+				"iconPath": "static/images/settings.png",
+				"selectedIconPath": "static/images/settings-sel.png"
+			}
+		]
+	},
+	"condition" : { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [
+			{
+				"name": "", //模式名称
+				"path": "", //启动页面，必选
+				"query": "" //启动参数，在页面的onLoad函数里面得到
 			}
 		]
 	}

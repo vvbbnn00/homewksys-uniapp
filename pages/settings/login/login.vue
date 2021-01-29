@@ -24,7 +24,7 @@
 				<view class="img">
 					<uni-icons type="locked-filled" size="30"></uni-icons>
 				</view>
-				<input :type="pwdType" :value="userpwd" @input="onInputPass" placeholder="请输入密码">
+				<input :type="pwdType" :value="userpwd" @keydown.enter="login" @input="onInputPass" placeholder="请输入密码">
 				<view class="img">
 					<uni-icons :type="imgInfo.eye_icon" size="24" @tap="switchPwd()"></uni-icons>
 				</view>
@@ -168,9 +168,11 @@
 	$logo-padding: 60px;
 	$form-border-color: rgba(214, 214, 214, 1);
 	$text-color: #B6B6B6;
-
+	
 	.page_login {
 		padding: 10px;
+		max-width: 550px;
+		margin: auto;
 	}
 
 	.head {

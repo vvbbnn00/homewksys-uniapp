@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view class="content">
 		<uni-list :border="true">
 			<uni-list-item :thumb="avatar" thumb-size="lg" :rightText="user_click" clickable :to="user_to" link>
 				<view slot="body" class="uni-list-item__container">
@@ -47,6 +47,7 @@
 			<!-- #endif -->
 			<uni-list-item title="问题反馈" note="如果没有加我的QQ,您可以在这里反馈问题" clickable to="feedback/feedback" link></uni-list-item>
 			<uni-list-item title="关于软件" clickable to="../about/about"></uni-list-item>
+			<!--<uni-list-item title="消息推送" clickable to="./push/push" link></uni-list-item> -->
 		</uni-list>
 		<uni-section title="其他设置" type="line"></uni-section>
 		<uni-list>
@@ -127,6 +128,15 @@
 			this.init()
 		},
 		methods: {
+			get_avatar(email){
+				let qq_param = /^[0-9]{0,}@qq.com/
+				if (email.search(qq_param)!==-1){
+					return "http://q1.qlogo.cn/g?b=qq&nk="+ email.replace("@qq.com","") +"&s=640"
+				}
+				else{
+					return "https://cdn.v2ex.com/gravatar/" + md5(email);
+				}
+			},
 			show_verify(param){
 				if (param==="success"){
 					uni.showModal({
@@ -292,7 +302,7 @@
 						}).get()
 						uni.setStorageSync("usr_email",data['email']);
 						this.verify = check_data.result.data.length == 0 ? "不通过" : check_data.result.data[0].check ? "通过" : "不通过"
-						this.avatar = "https://cdn.v2ex.com/gravatar/" + md5(data['email']);
+						this.avatar = this.get_avatar(data['email']);
 						if (data['t_id'] == undefined) {
 							uni.showModal({
 								title: "提示",
@@ -376,6 +386,13 @@
 </script>
 
 <style lang="scss">
+	
+	.content {
+		max-width: 550px;
+		margin: auto;
+		box-shadow: 0px 0px 10px #888888;
+	}
+	
 	.verify-tag {
 		display: inline-block;
 		padding: 0px;

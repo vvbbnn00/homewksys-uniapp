@@ -15,7 +15,8 @@
 			"description": "用户邮箱"
 		},
 		"progress": {
-			"description": "当前进度"
+			"description": "当前进度",
+			"bsonType": "int"
 		},
 		"visible": {
 			"description": "是否可见"

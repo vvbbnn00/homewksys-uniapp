@@ -1,0 +1,30 @@
+{
+	"bsonType": "object",
+	"required": [],
+	"permission": {
+		"read": true,
+		"create": false,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "ID"
+		},
+		"title": {
+			"description": "视频标题"
+		},
+		"detail": {
+			"description": "详细简介"
+		},
+		"videos": {
+			"description": "视频个数，视频连接，视频长度"
+		},
+		"duration": {
+			"description": "视频总长度"
+		},
+		"timestamp": {
+			"description": "视频发布时间戳"
+		}
+	}
+}

@@ -1,8 +1,9 @@
 <template>
-	<view>
-		<uni-card class="index_card" title="总览" mode="basic" icon="circle-filled" 
-		:is-shadow="true" extra="您的排名" note="排行榜的数据仅对v0.2.0更新后登录的用户有效">
-			<center> <h2>您当前的排名：{{rank}}</h2></center>
+	<view class="content">
+		<uni-card class="index_card" title="总览" mode="basic" icon="circle-filled" :is-shadow="true" extra="您的排名" note="排行榜的数据仅对v0.2.0更新后登录的用户有效">
+			<center>
+				<h2>您当前的排名：{{rank}}</h2>
+			</center>
 		</uni-card>
 		<uni-list-item :class="(item.you ? 'you' : '' )" v-for="item in ranklist">
 			<view slot="header" :class="'rank_number r_'+(ranklist.indexOf(item)+1).toString()">
@@ -51,7 +52,7 @@
 						email: item.email[0] + item.email[1] + item.email[2] + "**@***.**",
 						progress: item.progress,
 						bar_style: bar_style,
-						you: item.email===uni.getStorageSync("usr_email") ? true : false,
+						you: item.email === uni.getStorageSync("usr_email") ? true : false,
 						avatar: "https://cdn.v2ex.com/gravatar/" + md5(item.email)
 					}
 				})
@@ -66,41 +67,50 @@
 </script>
 
 <style>
-	.you{
-		background-color: #e8e8e8;
+	.you {
+		background-color: #e8e8e8 !important;
 	}
-	
-	.rank_number{
+
+
+
+	.content {
+		padding-top: 20rpx;
+		max-width: 550px;
+		margin: auto;
+		box-shadow: 0px 0px 10px #888888;
+	}
+
+	.rank_number {
 		text-align: center;
 		font-size: 40rpx;
 		width: 10%;
 		margin-right: 40rpx;
 		color: #6D6D72;
 	}
-	
-	.r_1{
+
+	.r_1 {
 		font-size: 80rpx;
 		font-weight: bold;
 		color: #E33500;
 	}
-	
-	.r_2{
+
+	.r_2 {
 		font-size: 70rpx;
 		font-weight: bold;
 		color: #FC3B00;
 	}
-	
-	.r_3{
+
+	.r_3 {
 		font-size: 60rpx;
 		font-weight: bold;
 		color: #F0AD4E;
 	}
-	
-	
-	.single-list{
+
+
+	.single-list {
 		width: 100%;
 	}
-	
+
 	.progress {
 		font-size: 1.2em;
 		height: 20px;

@@ -32,6 +32,15 @@
 			this.get_login_data()
 		},
 		methods: {
+			get_avatar(email){
+				let qq_param = /^[0-9]{0,}@qq.com/
+				if (email.search(qq_param)!==-1){
+					return "http://q1.qlogo.cn/g?b=qq&nk="+ email.replace("@qq.com","") +"&s=640"
+				}
+				else{
+					return "https://cdn.v2ex.com/gravatar/" + md5(email);
+				}
+			},
 			getYMDHMS(timestamp) {
 				let time = new Date(timestamp)
 				let year = time.getFullYear()
@@ -69,7 +78,7 @@
 			c_avatar() {
 				uni.showModal({
 					title: '如何更换头像框',
-					content: '由于经费和时间所限，本程序的后端并不自带自定义头像功能。要想更换自己的头像，需要在【Gravatar】官网进行修改。',
+					content: '由于经费和时间所限，本程序的后端并不自带自定义头像功能。若您是QQ号邮箱注册的账户，则头像默认为QQ头像。若不是，要想更换自己的头像，需要在【Gravatar】官网进行修改。',
 					showCancel: false,
 				});
 			},
@@ -96,7 +105,7 @@
 						this.uid = "UID:" + data['uid'];
 						this.username = data['name'];
 						this.email = data['email'];
-
+						this.avatar = this.get_avatar(data['email'])
 						const db = uniCloud.database();
 						let logdata = await db.collection("user_log").orderBy("timestamp", "desc").limit(50).where({
 							email: this.email,
@@ -119,7 +128,6 @@
 								info: "仅显示最新50条日志"
 							});
 						}
-						this.avatar = "https://cdn.v2ex.com/gravatar/" + md5(data['email']);
 					} else {
 						uni.showToast({
 							title: '获取用户信息失败！',
@@ -137,5 +145,10 @@
 </script>
 
 <style>
-
+	.content {
+		max-width: 550px;
+		margin: auto;
+		box-shadow: 0px 0px 10px #888888;
+		padding-top: 20rpx;
+	}
 </style>

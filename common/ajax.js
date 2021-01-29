@@ -4,6 +4,7 @@ let BASE_URL = ""
 let ajaxTimes=0;
 // 封装请求方法，并向外暴露该方法
 export const ajax = (options)=>{
+	let trial = 3
 	BASE_URL = uni.getStorageSync("is_dev_mode")===true ? "http://dev.vvbbnn00.cn/" : "https://smfms.vvbbnn00.cn/"
 	// 解构请求头参数
 	if (options.local===undefined) options.local = true
@@ -18,7 +19,7 @@ export const ajax = (options)=>{
 		});
 	}
 	return new Promise((resolve,reject)=>{
-		try{
+		try1:try{
 			uni.request({
 				timeout:5000,
 				url:options.local ? BASE_URL+options.url : options.url,
@@ -29,6 +30,10 @@ export const ajax = (options)=>{
 					resolve(res)
 				},
 				fail: (err)=>{
+					if (trial<=3){
+						trial -= 1;
+						goto;
+					}
 					uni.showToast({
 					    title: '加载失败',
 						icon: 'none',

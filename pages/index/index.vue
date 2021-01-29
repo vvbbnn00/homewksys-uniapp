@@ -21,20 +21,20 @@
 			<view class="todo-list">
 				<table class="pure-table">
 					<tr v-for="item in thisweek">
-						<td>
-							<view class="task-name" style="width: 120rpx;">
+						<td width="20%">
+							<view class="task-name">
 								<uni-tag :text="item.accomplished === 'true' ? '达成' : calc_day(item.deadline).tag" :type="item.accomplished === 'true' ? 'success' : calc_day(item.deadline).color"
 								 :circle="true" @click="get_detail(item.title, item.deadline, item.detail, item.accomplished)"></uni-tag>
 							</view>
 						</td>
-						<td>
-							<view class="task-name" style="width: 200rpx;">{{item.title}}</view>
+						<td width="40%">
+							<view class="task-name">{{item.title}}</view>
 						</td>
-						<td>
-							<view class="task-name" style="width: 100rpx;">{{item.now}}/{{item.exp}}</view>
+						<td width="20%">
+							<view class="task-name">{{item.now}}/{{item.exp}}</view>
 						</td>
-						<td>
-							<view class="task-name" style="width: 120rpx;">
+						<td width="20%">
+							<view class="task-name">
 								<uni-tag :text="item.accomplished === 'true' ? '查看' : '去完成'" :type="item.accomplished === 'true' ? 'primary' : 'warning'"
 								 :circle="false" @click="go_detail(item.tid)"></uni-tag>
 							</view>
@@ -109,21 +109,21 @@
 			// #ifdef APP-PLUS
 			this.get_latest_version();
 			// #endif
-			if ((uni.getStorageSync("token") !== "") && (uni.getStorageSync("Update-v0.2") !== "OK")) {
-				uni.showModal({
-					title: "提示",
-					content: "由于该更新是大版本更新，可能会遇到数据显示错误的现象，按确定以同步。",
-					showCancel: false,
-					success: (res) => {
-						if (res.confirm) {
-							uni.switchTab({
-								url: "../settings/settings"
-							})
-							uni.setStorageSync("Update-v0.2", "OK")
-						}
-					}
-				})
-			}
+			// if ((uni.getStorageSync("token") !== "") && (uni.getStorageSync("Update-v0.2") !== "OK")) {
+			// 	uni.showModal({
+			// 		title: "提示",
+			// 		content: "由于该更新是大版本更新，可能会遇到数据显示错误的现象，按确定以同步。",
+			// 		showCancel: false,
+			// 		success: (res) => {
+			// 			if (res.confirm) {
+			// 				uni.switchTab({
+			// 					url: "../settings/settings"
+			// 				})
+			// 				uni.setStorageSync("Update-v0.2", "OK")
+			// 			}
+			// 		}
+			// 	})
+			// }
 		},
 		methods: {
 			async load_tasks() {
@@ -420,6 +420,7 @@
 	}
 
 	.pure-table {
+		width: 100%;
 		border-collapse: collapse;
 		border-spacing: 0;
 		empty-cells: show;
@@ -430,13 +431,17 @@
 
 	.todo-list {
 		display: flex;
+		width: 100%;
 	}
 
 	.content {
+		max-width: 550px;
+		box-shadow: 0px 0px 10px #888888;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		margin: auto;
 	}
 
 	.task_title {
@@ -470,7 +475,12 @@
 	}
 
 	.countdown {
-		width: 50%;
+		/* #ifdef H5 */
+		display: inline-flex;		
+		/* #endif */
+		/* #ifdef APP-PLUS */
+		width: 35%;
+		/* #endif */
 		font-size: 30rpx;
 		font-weight: bold;
 	}

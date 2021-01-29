@@ -1,0 +1,476 @@
+<template>
+	<view class="content">
+		<view class="video-panel">
+			<view>
+				<video class="video-frame" v-if="reload_switch" id="myVideo" :src="src" @error="videoErrorCallback" :danmu-list="empty"
+				 @timeupdate="show_time" enable-danmu :controls="false" :enable-progress-gesture="false" :duration="duration"
+				 @waiting="is_waiting=true" @play="is_playing=true" :show-loading="true" :show-center-play-btn="false"
+				 @loadedmetadata="loaded_fun" @ended="vid_stop" @fullscreenchange="update_full">
+					<cover-view class="color-picker" v-if="show_color_picker" :style="{top: color_top_offset, left: color_left_offset}">
+						<text class="color-picker-title">选取弹幕颜色</text>
+						<uni-row class="color-row" justify="center" align="center">
+							<cover-view class="color" @click="set_color('#FFFFFF')" style="background-color: #FFFFFF;"></cover-view>
+							<cover-view class="color" @click="set_color('#ff0000')" style="background-color: #ff0000;"></cover-view>
+							<cover-view class="color" @click="set_color('#ffaa00')" style="background-color: #ffaa00;"></cover-view>
+							<cover-view class="color" @click="set_color('#ffff00')" style="background-color: #ffff00;"></cover-view>
+							<cover-view class="color" @click="set_color('#55ff00')" style="background-color: #55ff00;"></cover-view>
+						</uni-row>
+						<uni-row class="color-row" justify="center" align="center">
+							<cover-view class="color" @click="set_color('#0000ff')" style="background-color: #0000ff;"></cover-view>
+							<cover-view class="color" @click="set_color('#00ffff')" style="background-color: #00ffff;"></cover-view>
+							<cover-view class="color" @click="set_color('#ff00ff')" style="background-color: #ff00ff;"></cover-view>
+							<cover-view class="color" @click="set_color('#bebebe')" style="background-color: #bebebe;"></cover-view>
+							<cover-view class="color" @click="set_color('#000000')" style="background-color: #000000;"></cover-view>
+						</uni-row>
+					</cover-view>
+					<!-- 					<cover-view class="loading-cover" v-if="is_waiting===false">
+						<text style="color: #F1F1F1;text-align: center; top: 200rpx;">加载中</text>
+					</cover-view> -->
+					<cover-view class="listener" v-if="show_color_picker===false" @click="change_panel"></cover-view>
+					<cover-view id="myControl" class="video-control" v-if="open_panel===true" :style="{left: offset}">
+						<view class="upper-control">
+							<view id="progress" class="progress" @touchstart="print_pos" @touchmove="print_pos" @touchend="start_move=false">
+								<view id="progress" class="progress-bar" :style="'width: '+((current/duration)*660)+'rpx'">
+									<view class="progress-thumb" @click=""></view>
+								</view>
+							</view>
+						</view>
+						<view class="lower-control">
+							<uni-row>
+								<uni-col :span="8" style="flex-direction: row;">
+									<cover-image :src="'../../../../static/bzpl-video/'+(is_playing===false ? 'play.png' : 'pause.png')" class="ctrl_button"
+									 @click="start_pause()"></cover-image>
+									<text class="progress_text">{{trans_time(current)}}/{{trans_time(duration)}}</text>
+								</uni-col>
+								<uni-col :span="12" style="flex-direction: row;">
+									<input v-model="danmuValue" class="uni-input" type="text" placeholder="友♂善的弹幕" />
+									<cover-image src="../../../../static/bzpl-video/color-picker.png" class="ctrl_button" @click="show_color_picker=true"></cover-image>
+									<cover-image src="../../../../static/bzpl-video/paper-plane.png" class="ctrl_button" @click="sendDanmu"></cover-image>
+								</uni-col>
+								<uni-col :span="2" style="flex-direction: row;">
+									<cover-image class="ctrl_button" :src="'../../../../static/bzpl-video/'+(is_fullscreen===false ? 'full.png' : 'exitfull.png')"
+									 @click="fill_screen()" style=""></cover-image>
+								</uni-col>
+							</uni-row>
+						</view>
+					</cover-view>
+				</video>
+			</view>
+		</view>
+		<uni-card class="index_card" title="视频详情" mode="basic" icon="circle-filled" :is-shadow="true" extra="查看视频详细资料">
+			<p><b>视频VID：</b>{{this.vid}}</p>
+			<p><b>视频标题：</b>{{this.title}}</p>
+			<p><b>视频介绍：</b></p>
+			<rich-text :nodes="detail"></rich-text>
+		</uni-card>
+	</view>
+</template>
+
+<script>
+	//内容缓存管理器
+	function XCache() {}
+	//立刻缓存特定资源
+	XCache.cache = function(p) {
+		if (p instanceof Array) {
+			for (var i = 0, len = p.length; i < len; i++)
+				(new Image()).src = p[i];
+		} else new Image().src = p;
+	};
+
+	export default {
+		components: {},
+		data() {
+			return {
+				vid: "加载中",
+				empty: [],
+				title: "加载中",
+				detail: "加载中",
+				src: '',
+				now_clip: -1,
+				current: 0,
+				duration: 0,
+				load_ok: false,
+				reload_switch: true,
+				is_playing: false,
+				is_waiting: false,
+				is_fullscreen: false,
+				open_panel: true,
+				show_color_picker: false,
+				offset: 0,
+				color: "#ffffff",
+				file: {},
+				dammuku: [],
+				danmuValue: '',
+				start_move: false,
+				waiting_time: 0,
+			}
+		},
+		onReady: function(res) {
+			this.videoContext = uni.createVideoContext('myVideo')
+		},
+		onLoad() {
+			// uni.setStorageSync("watch_vid", "6013dbc4db4db10001bb92fc")
+			this.vid = uni.getStorageSync("watch_vid")
+			if (this.vid === "") {
+				uni.showModal({
+					title: "提示",
+					content: "视频内容加载失败",
+					showCancel: false
+				})
+			} else {
+				this.load_vid_info(this.vid)
+			}
+		},
+		methods: {
+			set_color(color) {
+				this.color = color
+				this.show_color_picker = false
+			},
+			update_full(res) {
+				this.is_fullscreen = res.detail.fullScreen
+			},
+			change_panel() {
+				this.open_panel = this.open_panel === true ? false : true
+			},
+			vid_stop() {
+				this.is_playing = false
+				this.videoContext.stop()
+				this.current = 0
+				this.reload_switch = false;
+				this.$nextTick(() => {
+					this.reload_switch = true;
+				})
+			},
+			loaded_fun() {
+				this.videoContext.seek(this.current - this.decide_video_clip(this.current).start_pos)
+			},
+			protect_fun() {
+				const query = uni.createSelectorQuery().in(this);
+				if (this.current >= this.duration) {
+					this.vid_stop()
+				}
+				this.fullControlsWidth = uni.getSystemInfoSync().screenWidth;
+				this.fullControlsHeigt = uni.getSystemInfoSync().screenHeight;
+				this.color_top_offset = !this.is_fullscreen ? this.fullControlsHeigt * 0.05 : this.fullControlsHeigt * 0.3
+				this.color_left_offset = this.fullControlsWidth / 2 - 196.5 + 95
+				this.offset = this.fullControlsWidth / 2 - 196.5
+				if (this.is_playing) this.videoContext.play()
+				setTimeout(this.protect_fun, 250)
+			},
+			print_pos(pos) {
+				this.start_move = true
+				let width = 355;
+				this.current = pos.touches[0].pageX / (width) * this.duration
+				let data = this.decide_video_clip(this.current)
+
+				if (this.now_clip !== data.index) {
+					this.src = this.file.videos[data.index].url
+				}
+				if (!this.is_playing) {
+					this.videoContext.pause()
+				} else {
+					this.videoContext.pause()
+				}
+				this.videoContext.seek(this.current - data.start_pos)
+			},
+			fill_screen() {
+				if (this.is_fullscreen === false) {
+					this.videoContext.requestFullScreen()
+				} else {
+					this.videoContext.exitFullScreen()
+				}
+			},
+			decide_video_clip(current) {
+				let tmp = 0
+				for (let index in this.file.videos) {
+					tmp += this.file.videos[index].duration
+					if (tmp > current) {
+						if (tmp - current <= 10) {
+							try {
+								XCache.cache(this.file.videos[index + 1].url);
+							} catch {}
+						}
+						return {
+							index: index,
+							start_pos: tmp - this.file.videos[index].duration
+						}
+					}
+				}
+				return {
+					index: this.file.videos.length - 1,
+					start_pos: tmp - this.file.videos[this.file.videos.length - 1].duration
+				}
+			},
+			start_pause() {
+				if (this.current >= this.duration) {
+					this.current = 0.000001
+					this.now_clip = 0
+				}
+				if (this.is_playing) {
+					this.is_playing = false
+					this.videoContext.pause()
+				} else {
+					this.is_playing = true
+					this.videoContext.play()
+				}
+				this.load_ok = true
+			},
+			async load_vid_info(vid) {
+				const db = uniCloud.database();
+				const info_coll = db.collection("hwk_vid_info")
+				const dammu_coll = db.collection("hwk_vid_dammuku")
+				this.file = await info_coll.where({
+					"_id": vid
+				}).get()
+				this.file = this.file.result.data[0]
+
+				let dammuku = await dammu_coll.where({
+					"vid": vid
+				}).limit(3000).get()
+				this.file.dammuku = dammuku.result.data
+				this.duration = this.file.duration
+				this.detail = this.file.detail
+				this.title = this.file.title
+				this.current = 0
+				this.src = this.file.videos[0].url
+				this.dammuku = this.file.dammuku
+				this.protect_fun()
+			},
+			show_time(res) {
+				this.check_for_waiting = true
+				this.is_waiting = false
+				this.load_ok = true
+				let now_t = (res.detail.currentTime) // 视频真实时间
+				now_t = parseFloat(now_t)
+				let data = this.decide_video_clip(this.current) // 获得播放的视频片段信息
+				let now = this.now_clip
+				this.src = this.file.videos[data.index].url
+				if (now !== data.index) {
+					this.now_clip = data.index
+					return
+				}
+				this.now_clip = data.index
+				this.current = now_t + data.start_pos
+				for (let index in this.dammuku) {
+					if (Math.abs(this.current - this.dammuku[index].timestamp) <= 1) {
+						if (this.dammuku[index].locked) continue
+						this.videoContext.sendDanmu({
+							text: this.dammuku[index].text,
+							color: this.dammuku[index].color
+						});
+						this.dammuku[index].locked = true
+						setTimeout((who, index) => {
+							who.dammuku[index].locked = false
+						}, 4000, this, index)
+					}
+				}
+
+				/* 旧版弹幕控制方法，存在问题
+				try
+				{
+					if (this.dammuku[0].time < this.current) {
+						this.videoContext.sendDanmu({
+							text: this.dammuku[0].text,
+							color: this.dammuku[0].color
+						});
+						this.dammuku.shift()
+					}
+				}
+				catch{
+					
+				}
+				*/
+			},
+			trans_time(sec) {
+				let hours = Math.floor(sec / 3600)
+				let minutes = Math.floor(sec / 60) - hours * 60
+				let secs = Math.floor(sec - hours * 3600 - minutes * 60)
+				return (hours == 0 ? "" : hours <= 9 ? "0" + hours.toString() + ":" : hours.toString() + ":") + (minutes <= 9 ? "0" +
+					minutes.toString() + ":" : minutes.toString() + ":") + (secs <= 9 ? "0" + secs.toString() :
+					secs.toString())
+			},
+			sendDanmu: function() {
+				let pass = true
+				if (uni.getStorageSync("usr_email") === "") {
+					uni.showModal({
+						title: "提示",
+						content: "您未登录，为防止恶意发言，您的弹幕仅自己可见",
+						showCancel: false
+					})
+					pass = false
+				}
+				if (this.danmuValue.trim() !== "") {
+					let data = {
+						vid: this.vid,
+						email: uni.getStorageSync("usr_email"),
+						text: this.danmuValue,
+						color: this.color,
+						timestamp: this.current
+					}
+					this.dammuku.push(data)
+					if (pass) {
+						const db = uniCloud.database();
+						db.collection("hwk_vid_dammuku").add(data)
+					}
+					this.danmuValue = '';
+				}
+			},
+			videoErrorCallback: function(e) {
+				if (!this.load_ok) {
+					return
+				}
+				uni.showModal({
+					content: "播放出现错误！",
+					showCancel: false
+				})
+			},
+			getRandomColor: function() {
+				const rgb = []
+				for (let i = 0; i < 3; ++i) {
+					let color = Math.floor(Math.random() * 256).toString(16)
+					color = color.length == 1 ? '0' + color : color
+					rgb.push(color)
+				}
+				return '#' + rgb.join('')
+			}
+		},
+	}
+</script>
+
+<style>
+	.color-row {}
+
+	.color {
+		width: 55rpx;
+		height: 45rpx;
+		border-width: 1rpx;
+		border-style: solid;
+		border-color: #EEEEEE;
+		border-radius: 10rpx;
+		margin-left: 5rpx;
+		margin-right: 5rpx;
+	}
+
+	.color-picker-title {
+		color: #d6d6d6;
+		margin-top: 20rpx;
+		margin-bottom: 15rpx;
+		font-size: 30rpx;
+		text-align: center;
+	}
+
+	.color-picker {
+		top: 100rpx;
+		width: 350rpx;
+		height: 200rpx;
+		background-color: rgba(0, 0, 0, 0.5);
+		border-width: 1rpx;
+		border-style: solid;
+		border-color: #EEEEEE;
+		border-radius: 20rpx;
+	}
+
+	.progress_text {
+		margin-top: 5rpx;
+		color: #FFFFFF;
+		font-size: 25rpx;
+	}
+
+
+	.content {
+		padding-top: 5rpx;
+		padding-bottom: 20rpx;
+	}
+
+	.listener {
+		width: 999999rpx;
+		height: 200rpx;
+	}
+
+	.uni-input {
+		font-size: 25rpx;
+		height: 45rpx;
+		color: #FFFFFF;
+		background-color: rgba(255, 255, 255, 0.5);
+		width: 250rpx;
+		border-radius: 20px;
+		margin-right: 5rpx;
+		padding-left: 15rpx;
+	}
+
+	.loading-cover {
+		background-color: rgba(0, 0, 0, 0.5);
+		height: 9999rpx;
+	}
+
+	.loading-center {
+		color: #FFFFFF;
+	}
+
+	.video-panel {
+		width: 710rpx;
+		margin: 10px;
+		text-align: center;
+	}
+
+	.control-buttons {
+		position: relative;
+		/* display: block; */
+		width: 710rpx;
+	}
+
+	.video-control {
+		/*height: 30px;*/
+		border-radius: 20rpx;
+		width: 710rpx;
+		bottom: 0;
+		position: absolute;
+		padding-bottom: 10px;
+		background-color: rgba(0, 0, 0, 0.5);
+		color: #FFFFFF;
+	}
+
+	.upper-control {
+		margin-top: 20rpx;
+		padding-left: 15px;
+		padding-right: 15px;
+		flex-direction: row;
+	}
+
+	.lower-control {
+		padding-top: 15rpx;
+		padding-bottom: 5rpx;
+		padding-left: 15rpx;
+		flex-direction: row;
+	}
+
+	.ctrl_button {
+		height: 45rpx;
+		width: 45rpx;
+		margin-right: 5rpx;
+		margin-left: 5rpx;
+	}
+
+
+	.video-frame {
+		margin-top: 20rpx;
+		/* min-height: 300px; */
+		width: 710rpx;
+		box-shadow: 0px -1px 10rpx #BBBBBB;
+	}
+
+	.progress {
+		width: 660rpx;
+		height: 20rpx;
+		border-radius: 10px;
+		background-color: #F1F5FD;
+		/* display: inline-block; */
+	}
+
+	.progress-bar {
+		width: 660rpx;
+		height: 100px;
+		border-radius: 3px;
+		background-color: #0072FF;
+	}
+</style>

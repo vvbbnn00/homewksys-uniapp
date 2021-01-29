@@ -2,8 +2,8 @@
     "name" : "作业任务系统",
     "appid" : "__UNI__6F90532",
     "description" : "作业任务系统",
-    "versionName" : "0.2.0",
-    "versionCode" : 20,
+    "versionName" : "0.2.2",
+    "versionCode" : 22,
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
@@ -11,13 +11,16 @@
         "nvueCompiler" : "uni-app",
         "compilerVersion" : 3,
         "splashscreen" : {
-            "alwaysShowBeforeRender" : false,
+            "alwaysShowBeforeRender" : true,
             "waiting" : true,
             "autoclose" : true,
             "delay" : 0
         },
         /* 模块配置 */
-        "modules" : {},
+        "modules" : {
+            "Push" : {},
+            "VideoPlayer" : {}
+        },
         /* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
@@ -44,7 +47,10 @@
             },
             /* SDK配置 */
             "sdkConfigs" : {
-                "ad" : {}
+                "ad" : {},
+                "push" : {
+                    "unipush" : {}
+                }
             },
             "icons" : {
                 "android" : {
@@ -85,7 +91,8 @@
         },
         "uniStatistics" : {
             "enable" : true
-        }
+        },
+        "nativePlugins" : {}
     },
     /* 快应用特有相关 */
     "quickapp" : {},
@@ -125,7 +132,12 @@
         "uniStatistics" : {
             "enable" : true
         },
-        "title" : ""
+        "title" : "",
+        "optimization" : {
+            "treeShaking" : {
+                "enable" : true
+            }
+        }
     },
     "mp-qq" : {
         "uniStatistics" : {

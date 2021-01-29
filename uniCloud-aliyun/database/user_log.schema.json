@@ -3,7 +3,7 @@
 	"required": [],
 	"permission": {
 		"read": true,
-		"create": false,
+		"create": true,
 		"update": false,
 		"delete": false
 	},
@@ -14,7 +14,7 @@
 		"email": {
 			"description": "用户的邮箱"
 		},
-		"date": {
+		"timestamp": {
 			"description": "log创建的时间"
 		},
 		"content": {

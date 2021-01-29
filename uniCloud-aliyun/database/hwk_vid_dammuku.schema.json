@@ -1,0 +1,30 @@
+{
+	"bsonType": "object",
+	"required": [],
+	"permission": {
+		"read": true,
+		"create": true,
+		"update": false,
+		"delete": false
+	},
+	"properties": {
+		"_id": {
+			"description": "弹幕ID"
+		},
+		"vid": {
+			"description": "视频ID"
+		},
+		"text": {
+			"description": "弹幕的内容"
+		},
+		"email": {
+			"description": "发送者邮箱"
+		},
+		"color": {
+			"description": "弹幕的颜色"
+		},
+		"timestamp": {
+			"description": "发送时间戳"
+		}
+	}
+}

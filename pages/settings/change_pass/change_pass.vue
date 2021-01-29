@@ -17,6 +17,13 @@
 			<view class="line" />
 			<view class="input">
 				<view class="img">
+					<uni-icons type="info" size="30"></uni-icons>
+				</view>
+				<text class="info">{{number}}</text>
+			</view>
+			<view class="line" />
+			<view class="input">
+				<view class="img">
 					<uni-icons type="locked" size="30"></uni-icons>
 				</view>
 				<input type="password" v-model="userpwd" placeholder="原密码">
@@ -33,7 +40,7 @@
 				<view class="img">
 					<uni-icons type="locked-filled" size="30"></uni-icons>
 				</view>
-				<input type="password" v-model="v_userpwd" placeholder="确认新密码">
+				<input type="password" v-model="v_userpwd" @keydown.enter="login" placeholder="确认新密码">
 			</view>
 			<view class="line" />
 			<view class="notification">注意：密码长度6-20位，包含数字，英文，字符中的两种以上。</view>
@@ -58,7 +65,8 @@
 				email: "加载中",
 				school_number: "",
 				name: "加载中",
-				v_userpwd: ""
+				v_userpwd: "",
+				number:"加载中"
 			}
 		},
 		methods: {
@@ -86,6 +94,7 @@
 				})
 				this.email = data.email;
 				this.name = data.name;
+				this.number = data.school_number;
 			},
 			async login() {
 				let p_pattern = /^(?![0-9]+$)(?![a-z]+$)(?![A-Z]+$)(?!([^(0-9a-zA-Z)])+$).{6,20}$/
@@ -159,6 +168,9 @@
 	}
 </style>
 <style lang="scss" scoped>
+	.content {
+
+	}
 	$logo-padding: 60px;
 	$form-border-color: rgba(214, 214, 214, 1);
 	$text-color: #c8c8c8;
@@ -180,6 +192,8 @@
 
 	.page_login {
 		padding: 10px;
+		max-width: 550px;
+		margin: auto;
 	}
 
 	.head {

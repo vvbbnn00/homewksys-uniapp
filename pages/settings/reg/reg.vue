@@ -33,7 +33,7 @@
 				<view class="img">
 					<uni-icons type="locked-filled" size="30"></uni-icons>
 				</view>
-				<input type="password" v-model="c_userpwd" placeholder="确认密码">
+				<input type="password" @keydown.enter="login" v-model="c_userpwd" placeholder="确认密码">
 			</view>
 			<view class="line" />
 			<view class="notification">注意：密码长度6-20位，包含数字，英文，字符中的两种以上。</view>
@@ -142,6 +142,8 @@
 
 	.page_login {
 		padding: 10px;
+		max-width: 550px;
+		margin: auto;
 	}
 
 	.head {

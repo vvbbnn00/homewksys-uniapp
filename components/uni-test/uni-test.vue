@@ -1,6 +1,6 @@
 <template>
 	<view>
-		
+		测试插件
 	</view>
 </template>
 
@@ -9,10 +9,7 @@
 		data() {
 			return {
 				
-			}
-		},
-		methods: {
-			
+			};
 		}
 	}
 </script>

@@ -1,5 +1,5 @@
 <template>
-	<view class="page">
+	<view class="page content">
 		<view class="feedback-title">
 			<text>问题和意见</text>
 			<text class="feedback-quick" @tap="chooseMsg">快速键入</text>
@@ -202,7 +202,10 @@
 
 <style>
 	@import '../../../common/uni.css';
-	
+	.content {
+		max-width: 550px;
+		margin: auto;
+	}
 	page {
 		background-color: #F4F5F6;
 	}

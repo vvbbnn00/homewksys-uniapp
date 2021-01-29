@@ -1,0 +1,23 @@
+{
+  "name": "homewk-uni",
+  "version": "1.0.0",
+  "description": "这个作业任务系统可以免去您手工查看一条条繁琐的作业的时间，您只需注册账号，然后选择您的选科，即可获得一份您的专属作业大礼包啦！",
+  "main": "main.js",
+  "dependencies": {},
+  "devDependencies": {
+    "sass-resources-loader": "^2.1.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vvbbnn00/homewksys-uniapp.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vvbbnn00/homewksys-uniapp/issues"
+  },
+  "homepage": "https://github.com/vvbbnn00/homewksys-uniapp#readme"
+}
