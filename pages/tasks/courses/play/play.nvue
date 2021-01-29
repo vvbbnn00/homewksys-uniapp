@@ -60,8 +60,7 @@
 		<uni-card class="index_card" title="视频详情" mode="basic" icon="circle-filled" :is-shadow="true" extra="查看视频详细资料">
 			<text>视频VID：{{this.vid}}</text>
 			<text>视频标题：{{this.title}}</text>
-			<text>视频介绍：</text>
-			<view><rich-text :nodes="detail"></rich-text></view>
+			<text>视频介绍：{{this.detail}}</text>
 		</uni-card>
 	</view>
 </template>
@@ -76,7 +75,6 @@
 				(new Image()).src = p[i];
 		} else new Image().src = p;
 	};
-
 	export default {
 		components: {},
 		data() {
@@ -229,7 +227,7 @@
 				}).limit(3000).get()
 				this.file.dammuku = dammuku.result.data
 				this.duration = this.file.duration
-				this.detail = this.file.detail
+				this.detail = this.file.txt_detail
 				this.title = this.file.title
 				this.current = 0
 				this.src = this.file.videos[0].url
