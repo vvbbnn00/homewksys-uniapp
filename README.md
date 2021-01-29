@@ -23,6 +23,7 @@
 - 【优化】用QQ号邮箱注册的账户，头像自动为QQ头像
 - 【优化】略微优化了ajax策略
 - 【优化】优化了关于界面（你在做什么啊？？？）
+- 【修复】修复了部署后弹幕在网页上不显示的问题
 
 ### 2021-01-27 
 - 【修复】首页通知显示问题
@@ -84,3 +85,4 @@
 ## 使用
 安卓版：见`RELEASE`
 网页端：[https://smfms.vvbbnn00.cn/homewk/](https://smfms.vvbbnn00.cn/homewk/ "https://smfms.vvbbnn00.cn/homewk/")
+试验性站点：[https://bzpl.cqdm.xyz/](https://bzpl.cqdm.xyz/)

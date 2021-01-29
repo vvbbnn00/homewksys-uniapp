@@ -58,10 +58,10 @@
 			</view>
 		</view>
 		<uni-card class="index_card" title="视频详情" mode="basic" icon="circle-filled" :is-shadow="true" extra="查看视频详细资料">
-			<p><b>视频VID：</b>{{this.vid}}</p>
-			<p><b>视频标题：</b>{{this.title}}</p>
-			<p><b>视频介绍：</b></p>
-			<rich-text :nodes="detail"></rich-text>
+			<text>视频VID：{{this.vid}}</text>
+			<text>视频标题：{{this.title}}</text>
+			<text>视频介绍：</text>
+			<view><rich-text :nodes="detail"></rich-text></view>
 		</uni-card>
 	</view>
 </template>

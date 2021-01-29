@@ -30,10 +30,6 @@ export const ajax = (options)=>{
 					resolve(res)
 				},
 				fail: (err)=>{
-					if (trial<=3){
-						trial -= 1;
-						goto;
-					}
 					uni.showToast({
 					    title: '加载失败',
 						icon: 'none',

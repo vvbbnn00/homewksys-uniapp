@@ -2,10 +2,12 @@
 	<view class="content">
 		<view class="video-panel">
 			<view>
-				<video class="video-frame" v-if="reload_switch" id="myVideo" :src="src" @error="videoErrorCallback"
-				 :danmu-list="empty" @timeupdate="show_time" enable-danmu :controls="false" :enable-progress-gesture="false"
-				 :duration="duration" @waiting="is_waiting=true" @play="is_playing=true" :show-loading="false" :show-center-play-btn="false"
+				<video class="video-frame" v-if="reload_switch" id="myVideo" :src="src" @error="videoErrorCallback" :danmu-list="empty"
+				 @timeupdate="show_time" enable-danmu :controls="false" :enable-progress-gesture="false" :duration="duration"
+				 @waiting="is_waiting=true" @play="is_playing=true" :show-loading="false" :show-center-play-btn="false"
 				 @loadedmetadata="loaded_fun" @ended="vid_stop" @fullscreenchange="update_full">
+					<cover-view id="danmu" class="dammuku-area">
+					</cover-view>
 					<cover-view class="color-picker" v-if="show_color_picker">
 						<center class="color-picker-title">选取弹幕颜色</center>
 						<row class="color-row" justify="center" align="center">
@@ -105,7 +107,6 @@
 				(new Image()).src = p[i];
 		} else new Image().src = p;
 	};
-
 	export default {
 		components: {
 			Row,
@@ -114,7 +115,17 @@
 		data() {
 			return {
 				vid: "加载中",
-				empty: [],
+				empty: [{
+						text: '这条弹幕不应出现',
+						color: '#ff0000',
+						time: 1
+					},
+					{
+						text: '这条弹幕不应出现',
+						color: '#ff00ff',
+						time: 3
+					}
+				],
 				title: "加载中",
 				detail: "加载中",
 				src: '',
@@ -151,7 +162,7 @@
 			}
 		},
 		methods: {
-			set_color(color){
+			set_color(color) {
 				this.color = color
 				this.show_color_picker = false
 			},
@@ -294,14 +305,28 @@
 				for (let index in this.dammuku) {
 					if (Math.abs(this.current - this.dammuku[index].timestamp) <= 1) {
 						if (this.dammuku[index].locked) continue
-						this.videoContext.sendDanmu({
-							text: this.dammuku[index].text,
-							color: this.dammuku[index].color
-						});
+						// this.videoContext.sendDanmu({
+						// 	text: this.dammuku[index].text,
+						// 	color: this.dammuku[index].color
+						// });
+						const p = document.createElement('p')
+						p.className = 'uni-video-danmu-item'
+						p.innerText = this.dammuku[index].text
+						let style = 'bottom: ' + (Math.random() * 80+10).toString() + '%;color: ' + this.dammuku[index].color + ";"
+						p.setAttribute('style', style)
+						this.$el.querySelector('#danmu').appendChild(p)
+						setTimeout(function() {
+							style += 'left: 0;-webkit-transform: translateX(-200%);transform: translateX(-200%);'
+							p.setAttribute('style', style)
+							setTimeout(function() {
+								p.remove()
+							}, 4000)
+						}, 17)
+						// this.$refs.lBarrage.add(, this.dammuku[index].color, (this.is_fullscreen ? 7 : 4));
 						this.dammuku[index].locked = true
 						setTimeout((who, index) => {
 							who.dammuku[index].locked = false
-						}, 4000, this, index)
+						}, 7000, this, index)
 					}
 				}
 
@@ -378,6 +403,15 @@
 </script>
 
 <style>
+	.dammuku-area {
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+	}
+
+
 	.color-row {
 		margin-top: 20rpx;
 		margin-bottom: 20rpx;
