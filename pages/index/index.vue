@@ -56,6 +56,11 @@
 				<uni-tag class="refresh-button" text="刷新" type="default" :circle="true" @click="get_one()"></uni-tag>
 			</view>
 		</uni-card>
+		<!-- bzpl.cqdm.xyz -->
+		<uni-card class="index_card" title="备案信息" mode="basic" :is-shadow="true">
+			赣ICP备20009925号-1
+		</uni-card>
+		
 	</view>
 </template>
 
@@ -178,7 +183,7 @@
 					"email": uni.getStorageSync("usr_email")
 				}).update({
 					email: uni.getStorageSync("usr_email"),
-					progress: this.task_progress
+					progress:  Math.round((total_now / total_total) * 100)
 				})
 			},
 			formatDate(date) {

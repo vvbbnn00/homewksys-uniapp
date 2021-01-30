@@ -83,6 +83,7 @@
 
 
 ## 使用
+应用发布页：[https://m3w.cn/zyrwxt](https://m3w.cn/zyrwxt)
 安卓版：见`RELEASE`
 网页端：[https://smfms.vvbbnn00.cn/homewk/](https://smfms.vvbbnn00.cn/homewk/ "https://smfms.vvbbnn00.cn/homewk/")
 试验性站点：[https://bzpl.cqdm.xyz/](https://bzpl.cqdm.xyz/)

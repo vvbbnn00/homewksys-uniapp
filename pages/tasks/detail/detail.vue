@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view class="content">
 		<uni-card :title="title" mode="title" :is-shadow="true" :thumbnail="pic" :extra="'任务ID:'+tid" :note="type">
 			<div class="progress progress--active" v-if="type!=='通知'">
 				<b :class="bar_style" :style="'width:'+progress+'%;'">
@@ -144,6 +144,15 @@
 </script>
 
 <style>
+	
+	.content {
+		padding-top: 20rpx;
+		padding-bottom: 20rpx;
+		max-width: 550px;
+		margin: auto;
+		box-shadow: 0px 0px 10px #888888;
+	}
+	
 	.panel {
 		display: flex;
 		justify-content: center;
